@@ -10,6 +10,8 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <!-- Google Fonts CDN for 'Press Start 2P' (pixelated font) and 'Inter' (default) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Press+Start 2P&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
     <style>
         /* Custom CSS for non-neon space theme */
         :root {
@@ -54,6 +56,8 @@
             max-width: 1200px; /* Max width for desktop */
             width: 100%;
             box-sizing: border-box; /* Include padding in width */
+            opacity: 0; /* Initially hidden, will fade in after loading */
+            transition: opacity 1s ease-in-out;
         }
 
         /* Pixelated Font for specific elements */
@@ -133,9 +137,54 @@
             cursor: not-allowed;
             box-shadow: none;
         }
+
+        /* Chart specific styles */
+        .chart-container {
+            position: relative;
+            height: 150px; /* Fixed height for charts */
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        /* Loading Overlay Styles */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--dark-bg); /* Match body background */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999; /* Ensure it's on top */
+            color: var(--text-color);
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.5rem;
+            transition: opacity 1s ease-in-out;
+        }
+
+        #loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none; /* Allow clicks through once hidden */
+        }
+
+        #loading-overlay p {
+            margin-top: 1rem;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-100">
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="flex flex-col items-center justify-center">
+        <div class="loader w-16 h-16"></div> <!-- Larger loader for overlay -->
+        <h2 class="font-pixel text-2xl mt-4">Initiating Planet Pulse...</h2>
+        <p>Loading vital Earth data.</p>
+    </div>
+
     <!-- Canvas for the animated background -->
     <canvas id="backgroundCanvas"></canvas>
 
@@ -162,6 +211,9 @@
                 <span class="text-lg text-gray-400" id="global-temp-unit">°C</span>
                 <div class="loader hidden mt-4" id="global-temp-loader"></div>
                 <div class="text-sm text-gray-500 mt-2" id="global-temp-status">Fetching data...</div>
+                <div class="chart-container">
+                    <canvas id="temperatureChart"></canvas>
+                </div>
             </div>
 
             <!-- Atmospheric CO₂ Levels Card -->
@@ -175,6 +227,9 @@
                 <span class="text-lg text-gray-400" id="co2-unit">ppm</span>
                 <div class="loader hidden mt-4" id="co2-loader"></div>
                 <div class="text-sm text-gray-500 mt-2" id="co2-status">Fetching data...</div>
+                <div class="chart-container">
+                    <canvas id="co2Chart"></canvas>
+                </div>
             </div>
 
             <!-- Solar Activity (Sunspots) Card -->
@@ -321,32 +376,186 @@
             }
         }
 
+        // Chart instances
+        let temperatureChartInstance = null;
+        let co2ChartInstance = null;
+
+        // Function to create/update Temperature Chart
+        function createTemperatureChart(labels, data) {
+            const ctx = document.getElementById('temperatureChart').getContext('2d');
+
+            if (temperatureChartInstance) {
+                temperatureChartInstance.destroy(); // Destroy existing chart before creating a new one
+            }
+
+            temperatureChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Temperature (°C)',
+                        data: data,
+                        borderColor: 'rgba(0, 140, 158, 0.8)', // space-blue
+                        backgroundColor: 'rgba(0, 140, 158, 0.2)',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointBackgroundColor: 'rgba(0, 140, 158, 1)',
+                        tension: 0.3, // Smooth line
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false // Hide legend
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}°C`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: 'rgba(224, 224, 224, 0.7)', // text-color with transparency
+                                font: {
+                                    family: 'Inter'
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(224, 224, 224, 0.1)' // Very subtle grid lines
+                            },
+                            ticks: {
+                                color: 'rgba(224, 224, 224, 0.7)', // text-color with transparency
+                                font: {
+                                    family: 'Inter'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Function to create/update CO2 Chart
+        function createCO2Chart(labels, data) {
+            const ctx = document.getElementById('co2Chart').getContext('2d');
+
+            if (co2ChartInstance) {
+                co2ChartInstance.destroy(); // Destroy existing chart before creating a new one
+            }
+
+            co2ChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'CO₂ (ppm)',
+                        data: data,
+                        borderColor: 'rgba(255, 0, 255, 0.8)', // A complementary accent color
+                        backgroundColor: 'rgba(255, 0, 255, 0.2)',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointBackgroundColor: 'rgba(255, 0, 255, 1)',
+                        tension: 0.3, // Smooth line
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false // Hide legend
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(2)} ppm`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: 'rgba(224, 224, 224, 0.7)',
+                                font: {
+                                    family: 'Inter'
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(224, 224, 224, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(224, 224, 224, 0.7)',
+                                font: {
+                                    family: 'Inter'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+
         // Function to fetch Global Surface Temperature
         async function fetchGlobalTemperature() {
             const cardId = 'global-temp';
             updateCardStatus(cardId, true, 'Fetching current temperature...');
 
             try {
-                // Using Open-Meteo for current weather at the equator as a global proxy
-                const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=0&longitude=0&current_weather=true&temperature_unit=celsius&forecast_days=1');
+                // Fetching daily average temperature for the last 7 days
+                const endDate = new Date().toISOString().split('T')[0];
+                const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 7 days ago
+
+                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=0&longitude=0&daily=temperature_2m_mean&temperature_unit=celsius&start_date=${startDate}&end_date=${endDate}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
 
-                const temperature = data.current_weather.temperature;
-                const time = new Date(data.current_weather.time).toLocaleTimeString();
+                const dailyTemps = data.daily.temperature_2m_mean;
+                const dates = data.daily.time;
+
+                const latestTemperature = dailyTemps[dailyTemps.length - 1];
+                const latestTime = new Date(dates[dates.length - 1]).toLocaleDateString(); // Use date for historical
 
                 updateCardStatus(
                     cardId,
                     false,
-                    `Last updated: ${time} (Open-Meteo)`,
-                    temperature.toFixed(1), // Format to one decimal place
+                    `Latest: ${latestTime} (Open-Meteo)`,
+                    latestTemperature.toFixed(1),
                     '°C'
                 );
+
+                // Update the chart
+                createTemperatureChart(dates.map(d => new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })), dailyTemps);
+
             } catch (error) {
                 console.error('Error fetching global temperature:', error);
                 updateCardStatus(cardId, false, 'Failed to load data.', 'N/A', '');
+                if (temperatureChartInstance) temperatureChartInstance.destroy(); // Clear chart on error
             }
         }
 
@@ -363,21 +572,30 @@
                 }
                 const data = await response.json();
 
-                // The API returns an array, take the last (most recent) entry
+                // Get the latest 30 CO2 data points for the chart
+                const co2DataPoints = data.co2.slice(Math.max(data.co2.length - 30, 0)); // Last 30 points
+                const labels = co2DataPoints.map(entry => entry.year);
+                const values = co2DataPoints.map(entry => parseFloat(entry.cycle));
+
                 const latestCO2 = data.co2[data.co2.length - 1];
-                const value = parseFloat(latestCO2.cycle); // Cycle value is usually the CO2 in ppm
+                const value = parseFloat(latestCO2.cycle);
                 const year = latestCO2.year;
 
                 updateCardStatus(
                     cardId,
                     false,
                     `Latest: ${year} (global-warming.org)`,
-                    value.toFixed(2), // Format to two decimal places
+                    value.toFixed(2),
                     'ppm'
                 );
+
+                // Update the chart
+                createCO2Chart(labels, values);
+
             } catch (error) {
                 console.error('Error fetching CO2 levels:', error);
                 updateCardStatus(cardId, false, 'Failed to load data.', 'N/A', '');
+                if (co2ChartInstance) co2ChartInstance.destroy(); // Clear chart on error
             }
         }
 
@@ -473,7 +691,7 @@
             "The largest known asteroid is Ceres, about 940 km wide.",
             "The highest mountain discovered is on Mars: Olympus Mons.",
             "Footprints on the Moon will stay there for 100 million years.",
-            "The universe is estimated to be 13.8 billion years old.",
+            "The universe is estimated to be 13.8 billion old.",
             "Jupiter's Great Red Spot is a storm larger than Earth.",
             "It takes 8 minutes for light from the Sun to reach Earth.",
             "The coldest place in the universe is the Boomerang Nebula.",
@@ -503,8 +721,10 @@
             console.log('Refreshing all data...');
             // Disable the refresh button and show loading state
             const refreshButton = document.getElementById('refreshButton');
-            refreshButton.disabled = true;
-            refreshButton.textContent = 'Refreshing...';
+            if (refreshButton) { // Check if button exists before trying to manipulate it
+                refreshButton.disabled = true;
+                refreshButton.textContent = 'Refreshing...';
+            }
 
             try {
                 await fetchGlobalTemperature();
@@ -514,8 +734,17 @@
                 await fetchRadiationIndex();
             } finally {
                 // Re-enable the button and restore text after all fetches (success or failure)
-                refreshButton.disabled = false;
-                refreshButton.textContent = 'Refresh All Data';
+                if (refreshButton) { // Check if button exists before trying to manipulate it
+                    refreshButton.disabled = false;
+                    refreshButton.textContent = 'Refresh All Data';
+                }
+                // Hide the loading overlay after initial data fetch is complete
+                const loadingOverlay = document.getElementById('loading-overlay');
+                const appContainer = document.getElementById('app-container');
+                if (loadingOverlay && appContainer) {
+                    loadingOverlay.classList.add('hidden');
+                    appContainer.style.opacity = '1'; // Fade in the main content
+                }
             }
         }
 
@@ -527,7 +756,7 @@
             setCanvasSize(); // Set initial size and initialize stars
             animate(); // Start the animation loop
 
-            // Fetch initial data for all cards
+            // Fetch initial data for all cards and then hide the loading overlay
             refreshAllData();
 
             // Set interval to refresh data every 5 minutes (300,000 milliseconds)
@@ -539,7 +768,9 @@
 
             // Add event listener for the manual refresh button
             const refreshButton = document.getElementById('refreshButton');
-            refreshButton.addEventListener('click', refreshAllData);
+            if (refreshButton) { // Ensure the button exists before adding listener
+                refreshButton.addEventListener('click', refreshAllData);
+            }
         };
     </script>
 </body>
