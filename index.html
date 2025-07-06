@@ -117,7 +117,7 @@
         <!-- Header Section -->
         <header class="text-center mb-8">
             <h1 class="font-pixel text-4xl md:text-6xl text-white subtle-text-effect mb-2">Planet Pulse</h1>
-            <p class="font-inter text-xl md:text-2xl text-gray-300 subtle-text-effect">Explore Earth like never before!</p>
+            <p class="font-inter text-xl md:text-2xl text-gray-300 subtle-text-effect">Your Window to the Cosmos.</p>
         </header>
 
         <!-- Main Data Cards Container -->
@@ -449,6 +449,16 @@
             currentFactIndex = (currentFactIndex + 1) % spaceFacts.length; // Cycle through facts
         }
 
+        // Function to refresh all API data
+        async function refreshAllData() {
+            console.log('Refreshing all data...');
+            await fetchGlobalTemperature();
+            await fetchCO2Levels();
+            await fetchSolarActivity();
+            displaySatelliteFact(); // This is static, but included for completeness
+            await fetchRadiationIndex();
+            // rotateSpaceFacts is on its own interval, so no need to call it here
+        }
 
         // Event listeners
         window.addEventListener('resize', setCanvasSize);
@@ -459,11 +469,12 @@
             animate(); // Start the animation loop
 
             // Fetch initial data for all cards
-            fetchGlobalTemperature();
-            fetchCO2Levels();
-            fetchSolarActivity();
-            displaySatelliteFact(); // Display static fact
-            fetchRadiationIndex();
+            refreshAllData();
+
+            // Set interval to refresh data every 5 minutes (300,000 milliseconds)
+            setInterval(refreshAllData, 300000);
+
+            // Start rotating space facts (already on its own interval)
             rotateSpaceFacts(); // Display first fact immediately
             setInterval(rotateSpaceFacts, 10000); // Rotate facts every 10 seconds
         };
