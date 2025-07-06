@@ -117,7 +117,7 @@
         <!-- Header Section -->
         <header class="text-center mb-8">
             <h1 class="font-pixel text-4xl md:text-6xl text-white subtle-text-effect mb-2">Planet Pulse</h1>
-            <p class="font-inter text-xl md:text-2xl text-gray-300 subtle-text-effect">"See Earth like never before."</p>
+            <p class="font-inter text-xl md:text-2xl text-gray-300 subtle-text-effect">Explore Earth like never before!</p>
         </header>
 
         <!-- Main Data Cards Container -->
@@ -250,14 +250,69 @@
             requestAnimationFrame(animate); // Request next frame
         }
 
+        // --- API Fetching Functions ---
+
+        // Helper function to show/hide loader and update status
+        function updateCardStatus(cardId, showLoader, statusText, valueText = null, unitText = null) {
+            const loader = document.getElementById(`${cardId}-loader`);
+            const status = document.getElementById(`${cardId}-status`);
+            const value = document.getElementById(`${cardId}-value`);
+            const unit = document.getElementById(`${cardId}-unit`);
+
+            if (showLoader) {
+                loader.classList.remove('hidden');
+                status.textContent = statusText;
+                if (value) value.textContent = '--.-'; // Reset value while loading
+                if (unit) unit.textContent = ''; // Clear unit while loading
+            } else {
+                loader.classList.add('hidden');
+                status.textContent = statusText;
+                if (valueText !== null) value.textContent = valueText;
+                if (unitText !== null) unit.textContent = unitText;
+            }
+        }
+
+        // Function to fetch Global Surface Temperature
+        async function fetchGlobalTemperature() {
+            const cardId = 'global-temp';
+            updateCardStatus(cardId, true, 'Fetching current temperature...');
+
+            try {
+                // Using Open-Meteo for current weather at the equator as a global proxy
+                const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=0&longitude=0&current_weather=true&temperature_unit=celsius&forecast_days=1');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                const temperature = data.current_weather.temperature;
+                const time = new Date(data.current_weather.time).toLocaleTimeString();
+
+                updateCardStatus(
+                    cardId,
+                    false,
+                    `Last updated: ${time} (Open-Meteo)`,
+                    temperature.toFixed(1), // Format to one decimal place
+                    '°C'
+                );
+            } catch (error) {
+                console.error('Error fetching global temperature:', error);
+                updateCardStatus(cardId, false, 'Failed to load data.', 'N/A', '');
+            }
+        }
+
         // Event listeners
         // This ensures the canvas and its contents adapt to window size changes.
         window.addEventListener('resize', setCanvasSize);
 
-        // Initialize and start animation when the window loads
+        // Initialize and start animation and data fetching when the window loads
         window.onload = function() {
             setCanvasSize(); // Set initial size and initialize stars
             animate(); // Start the animation loop
+
+            // Fetch initial data for all cards
+            fetchGlobalTemperature();
+            // Other fetch functions will be added here in subsequent steps
         };
     </script>
 </body>
