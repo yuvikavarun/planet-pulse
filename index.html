@@ -106,6 +106,31 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Button specific styles */
+        .refresh-button {
+            background-color: var(--space-blue);
+            color: var(--text-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            box-shadow: 0 0 8px rgba(0, 140, 158, 0.4);
+        }
+
+        .refresh-button:hover:not(:disabled) {
+            background-color: #00aacc; /* Slightly lighter blue on hover */
+            box-shadow: 0 0 12px var(--space-blue);
+        }
+
+        .refresh-button:disabled {
+            background-color: #4a4a4a;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-100">
@@ -118,6 +143,8 @@
         <header class="text-center mb-8">
             <h1 class="font-pixel text-4xl md:text-6xl text-white subtle-text-effect mb-2">Planet Pulse</h1>
             <p class="font-inter text-xl md:text-2xl text-gray-300 subtle-text-effect">Your Window to the Cosmos.</p>
+            <!-- Manual Refresh Button -->
+            <button id="refreshButton" class="refresh-button mt-6">Refresh All Data</button>
         </header>
 
         <!-- Main Data Cards Container -->
@@ -452,12 +479,22 @@
         // Function to refresh all API data
         async function refreshAllData() {
             console.log('Refreshing all data...');
-            await fetchGlobalTemperature();
-            await fetchCO2Levels();
-            await fetchSolarActivity();
-            displaySatelliteFact(); // This is static, but included for completeness
-            await fetchRadiationIndex();
-            // rotateSpaceFacts is on its own interval, so no need to call it here
+            // Disable the refresh button and show loading state
+            const refreshButton = document.getElementById('refreshButton');
+            refreshButton.disabled = true;
+            refreshButton.textContent = 'Refreshing...';
+
+            try {
+                await fetchGlobalTemperature();
+                await fetchCO2Levels();
+                await fetchSolarActivity();
+                displaySatelliteFact(); // This is static, but included for completeness
+                await fetchRadiationIndex();
+            } finally {
+                // Re-enable the button and restore text after all fetches (success or failure)
+                refreshButton.disabled = false;
+                refreshButton.textContent = 'Refresh All Data';
+            }
         }
 
         // Event listeners
@@ -477,6 +514,10 @@
             // Start rotating space facts (already on its own interval)
             rotateSpaceFacts(); // Display first fact immediately
             setInterval(rotateSpaceFacts, 10000); // Rotate facts every 10 seconds
+
+            // Add event listener for the manual refresh button
+            const refreshButton = document.getElementById('refreshButton');
+            refreshButton.addEventListener('click', refreshAllData);
         };
     </script>
 </body>
