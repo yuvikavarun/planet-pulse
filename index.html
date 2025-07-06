@@ -26,7 +26,7 @@
             font-family: 'Inter', sans-serif; /* Default font */
             background-color: var(--dark-bg);
             color: var(--text-color);
-            overflow: hidden; /* Prevent scrollbars due to canvas */
+            /* Removed overflow: hidden; to allow scrolling if content exceeds viewport */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -37,7 +37,7 @@
 
         /* Canvas for background */
         #backgroundCanvas {
-            position: absolute;
+            position: fixed; /* Changed to fixed to stay in background during scroll */
             top: 0;
             left: 0;
             width: 100%;
@@ -58,6 +58,7 @@
             box-sizing: border-box; /* Include padding in width */
             opacity: 0; /* Initially hidden, will fade in after loading */
             transition: opacity 1s ease-in-out;
+            min-height: 100vh; /* Ensure container is at least full height */
         }
 
         /* Pixelated Font for specific elements */
@@ -613,17 +614,22 @@
                 const data = await response.json();
 
                 // Get the latest data point
-                const latestFlux = data[data.length - 1];
-                const fluxValue = latestFlux.flux;
-                const time = new Date(latestFlux.time_tag).toLocaleTimeString();
+                const latestFlux = data && data.length > 0 ? data[data.length - 1] : null;
 
-                updateCardStatus(
-                    cardId,
-                    false,
-                    `Last updated: ${time} (NOAA SWPC)`,
-                    fluxValue.toExponential(1), // Display in scientific notation
-                    'W/m²'
-                );
+                if (latestFlux && latestFlux.flux !== undefined && latestFlux.time_tag !== undefined) {
+                    const fluxValue = latestFlux.flux;
+                    const time = new Date(latestFlux.time_tag).toLocaleTimeString();
+
+                    updateCardStatus(
+                        cardId,
+                        false,
+                        `Last updated: ${time} (NOAA SWPC)`,
+                        fluxValue.toExponential(1), // Display in scientific notation
+                        'W/m²'
+                    );
+                } else {
+                    updateCardStatus(cardId, false, 'No data available.', 'N/A', '');
+                }
             } catch (error) {
                 console.error('Error fetching solar activity:', error);
                 updateCardStatus(cardId, false, 'Failed to load data.', 'N/A', '');
@@ -662,19 +668,24 @@
                 }
                 const data = await response.json();
 
-                // Get the latest data point
-                const latestProtonFlux = data[data.length - 1];
-                const fluxValue = latestProtonFlux.flux;
-                const energy = latestProtonFlux.energy; // e.g., >10 MeV
-                const time = new Date(latestProtonFlux.time_tag).toLocaleTimeString();
+                // Get the latest data point, ensure data array is not empty
+                const latestProtonFlux = data && data.length > 0 ? data[data.length - 1] : null;
 
-                updateCardStatus(
-                    cardId,
-                    false,
-                    `Last updated: ${time} (NOAA SWPC)`,
-                    fluxValue.toExponential(1), // Display in scientific notation
-                    `${energy}` // Use the energy level as the unit/context
-                );
+                if (latestProtonFlux && latestProtonFlux.flux !== undefined && latestProtonFlux.energy !== undefined && latestProtonFlux.time_tag !== undefined) {
+                    const fluxValue = latestProtonFlux.flux;
+                    const energy = latestProtonFlux.energy; // e.g., >10 MeV
+                    const time = new Date(latestProtonFlux.time_tag).toLocaleTimeString();
+
+                    updateCardStatus(
+                        cardId,
+                        false,
+                        `Last updated: ${time} (NOAA SWPC)`,
+                        fluxValue.toExponential(1), // Display in scientific notation
+                        `${energy}` // Use the energy level as the unit/context
+                    );
+                } else {
+                    updateCardStatus(cardId, false, 'No data available.', 'N/A', '');
+                }
             } catch (error) {
                 console.error('Error fetching radiation index:', error);
                 updateCardStatus(cardId, false, 'Failed to load data.', 'N/A', '');
@@ -767,7 +778,7 @@
             setInterval(rotateSpaceFacts, 10000); // Rotate facts every 10 seconds
 
             // Add event listener for the manual refresh button
-            const refreshButton = document.getElementById('refreshButton');
+            const refreshButton = document.getElementById('refreshButton')
             if (refreshButton) { // Ensure the button exists before adding listener
                 refreshButton.addEventListener('click', refreshAllData);
             }
