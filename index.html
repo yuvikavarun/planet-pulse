@@ -7,7 +7,7 @@
     <!-- Tailwind CSS CDN for utility-first styling -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <!-- Google Fonts CDN for 'Press Start 2P' (pixelated font) and 'Inter' (default) -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Press+Start 2P&display=swap" rel="stylesheet">
     <style>
         /* Custom CSS for non-neon space theme */
         :root {
@@ -151,6 +151,10 @@
         <main id="data-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
             <!-- Global Surface Temperature Card -->
             <div id="temp-card" class="glowing-panel rounded-lg p-6 flex flex-col items-center text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
                 <h2 class="font-pixel text-xl mb-3 subtle-text-effect">Global Temperature</h2>
                 <p class="text-5xl font-bold text-white mb-2" id="global-temp-value">--.-</p>
                 <span class="text-lg text-gray-400" id="global-temp-unit">°C</span>
@@ -160,6 +164,10 @@
 
             <!-- Atmospheric CO₂ Levels Card -->
             <div id="co2-card" class="glowing-panel rounded-lg p-6 flex flex-col items-center text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6-6m-6 6l6 6m-6-6h6" />
+                </svg>
                 <h2 class="font-pixel text-xl mb-3 subtle-text-effect">Atmospheric CO₂</h2>
                 <p class="text-5xl font-bold text-white mb-2" id="co2-value">----</p>
                 <span class="text-lg text-gray-400" id="co2-unit">ppm</span>
@@ -169,6 +177,9 @@
 
             <!-- Solar Activity (Sunspots) Card -->
             <div id="solar-card" class="glowing-panel rounded-lg p-6 flex flex-col items-center text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.325 6.675l-.707-.707M6.675 6.675l-.707-.707m10.65 0l-.707.707M6.675 17.325l-.707.707M12 7a5 5 0 100 10 5 5 0 000-10z" />
+                </svg>
                 <h2 class="font-pixel text-xl mb-3 subtle-text-effect">Solar Activity</h2>
                 <p class="text-5xl font-bold text-white mb-2" id="solar-value">---</p>
                 <span class="text-lg text-gray-400" id="solar-unit">X-ray Flux</span>
@@ -178,6 +189,9 @@
 
             <!-- Active Satellites in Orbit Card -->
             <div id="satellites-card" class="glowing-panel rounded-lg p-6 flex flex-col items-center text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 8a8 8 0 01-8-8H4a10 10 0 0010 10V2a1 1 0 011-1h.5a1 1 0 011 1v.5a1 1 0 01-1 1h-.5a1 1 0 01-1-1v-.5a1 1 0 011-1z" />
+                </svg>
                 <h2 class="font-pixel text-xl mb-3 subtle-text-effect">Active Satellites</h2>
                 <p class="text-5xl font-bold text-white mb-2" id="satellites-value">-----</p>
                 <span class="text-lg text-gray-400" id="satellites-unit">in Orbit</span>
@@ -187,6 +201,9 @@
 
             <!-- Radiation Index / Solar Storms Card -->
             <div id="radiation-card" class="glowing-panel rounded-lg p-6 flex flex-col items-center text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
                 <h2 class="font-pixel text-xl mb-3 subtle-text-effect">Radiation Index</h2>
                 <p class="text-5xl font-bold text-white mb-2" id="radiation-value">--</p>
                 <span class="text-lg text-gray-400" id="radiation-unit">Proton Flux</span>
@@ -196,6 +213,9 @@
 
             <!-- Ozone Layer Status (or Space Facts) Card -->
             <div id="ozone-card" class="glowing-panel rounded-lg p-6 flex flex-col items-center text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m0 0l-7 7-7-7m7 7v10a1 1 0 01-1 1h-3" />
+                </svg>
                 <h2 class="font-pixel text-xl mb-3 subtle-text-effect">Space Fact</h2>
                 <p class="text-xl font-bold text-white mb-2" id="ozone-value">Loading facts...</p>
                 <div class="loader hidden mt-4" id="ozone-loader"></div>
