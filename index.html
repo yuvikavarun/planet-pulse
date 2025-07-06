@@ -90,6 +90,22 @@
                 padding: 2rem;
             }
         }
+
+        /* Loading spinner CSS */
+        .loader {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid var(--space-blue); /* Blue */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto; /* Center the loader */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-100">
@@ -106,12 +122,64 @@
 
         <!-- Main Data Cards Container -->
         <main id="data-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-            <!-- Data cards will be dynamically added or pre-defined here -->
+            <!-- Global Surface Temperature Card -->
+            <div id="temp-card" class="glowing-panel rounded-lg p-6 flex flex-col items-center text-center">
+                <h2 class="font-pixel text-xl mb-3 subtle-text-effect">Global Temperature</h2>
+                <p class="text-5xl font-bold text-white mb-2" id="global-temp-value">--.-</p>
+                <span class="text-lg text-gray-400" id="global-temp-unit">°C</span>
+                <div class="loader hidden mt-4" id="global-temp-loader"></div>
+                <div class="text-sm text-gray-500 mt-2" id="global-temp-status">Fetching data...</div>
+            </div>
+
+            <!-- Atmospheric CO₂ Levels Card -->
+            <div id="co2-card" class="glowing-panel rounded-lg p-6 flex flex-col items-center text-center">
+                <h2 class="font-pixel text-xl mb-3 subtle-text-effect">Atmospheric CO₂</h2>
+                <p class="text-5xl font-bold text-white mb-2" id="co2-value">----</p>
+                <span class="text-lg text-gray-400" id="co2-unit">ppm</span>
+                <div class="loader hidden mt-4" id="co2-loader"></div>
+                <div class="text-sm text-gray-500 mt-2" id="co2-status">Fetching data...</div>
+            </div>
+
+            <!-- Solar Activity (Sunspots) Card -->
+            <div id="solar-card" class="glowing-panel rounded-lg p-6 flex flex-col items-center text-center">
+                <h2 class="font-pixel text-xl mb-3 subtle-text-effect">Solar Activity</h2>
+                <p class="text-5xl font-bold text-white mb-2" id="solar-value">---</p>
+                <span class="text-lg text-gray-400" id="solar-unit">Sunspots</span>
+                <div class="loader hidden mt-4" id="solar-loader"></div>
+                <div class="text-sm text-gray-500 mt-2" id="solar-status">Fetching data...</div>
+            </div>
+
+            <!-- Active Satellites in Orbit Card -->
+            <div id="satellites-card" class="glowing-panel rounded-lg p-6 flex flex-col items-center text-center">
+                <h2 class="font-pixel text-xl mb-3 subtle-text-effect">Active Satellites</h2>
+                <p class="text-5xl font-bold text-white mb-2" id="satellites-value">-----</p>
+                <span class="text-lg text-gray-400" id="satellites-unit">in Orbit</span>
+                <div class="loader hidden mt-4" id="satellites-loader"></div>
+                <div class="text-sm text-gray-500 mt-2" id="satellites-status">Fetching data...</div>
+            </div>
+
+            <!-- Radiation Index / Solar Storms Card -->
+            <div id="radiation-card" class="glowing-panel rounded-lg p-6 flex flex-col items-center text-center">
+                <h2 class="font-pixel text-xl mb-3 subtle-text-effect">Radiation Index</h2>
+                <p class="text-5xl font-bold text-white mb-2" id="radiation-value">--</p>
+                <span class="text-lg text-gray-400" id="radiation-unit">Level</span>
+                <div class="loader hidden mt-4" id="radiation-loader"></div>
+                <div class="text-sm text-gray-500 mt-2" id="radiation-status">Fetching data...</div>
+            </div>
+
+            <!-- Ozone Layer Status (or Space Facts) Card -->
+            <div id="ozone-card" class="glowing-panel rounded-lg p-6 flex flex-col items-center text-center">
+                <h2 class="font-pixel text-xl mb-3 subtle-text-effect">Ozone Layer</h2>
+                <p class="text-xl font-bold text-white mb-2" id="ozone-value">Loading facts...</p>
+                <div class="loader hidden mt-4" id="ozone-loader"></div>
+                <div class="text-sm text-gray-500 mt-2" id="ozone-status"></div>
+            </div>
+
         </main>
 
         <!-- Footer Section -->
         <footer class="mt-12 text-center text-gray-400 font-pixel text-sm subtle-text-effect">
-            Made for Earthlings, By Yuvika R
+            Made for Earthlings, By Yuvika V
         </footer>
     </div>
 
@@ -128,12 +196,16 @@
         function setCanvasSize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            // When resizing, re-initialize stars to ensure they fill the new dimensions
+            stars.length = 0; // Clear existing stars
+            initStars(); // Re-create stars for the new size
         }
 
         // Star object constructor
         function Star() {
             this.x = Math.random() * canvas.width; // Random x position
-            this.y = Math.random() * canvas.height; // Random y position
+            // Start stars at random Y positions across the screen for a more natural initial look
+            this.y = Math.random() * canvas.height;
             this.size = Math.random() * 2 + 0.5; // Random size between 0.5 and 2.5
             this.speed = Math.random() * 0.5 + 0.1; // Random speed
             // Random grayscale color for a subtle effect
@@ -179,12 +251,12 @@
         }
 
         // Event listeners
-        window.addEventListener('resize', setCanvasSize); // Adjust canvas size on window resize
+        // This ensures the canvas and its contents adapt to window size changes.
+        window.addEventListener('resize', setCanvasSize);
 
         // Initialize and start animation when the window loads
         window.onload = function() {
-            setCanvasSize(); // Set initial size
-            initStars(); // Create stars
+            setCanvasSize(); // Set initial size and initialize stars
             animate(); // Start the animation loop
         };
     </script>
